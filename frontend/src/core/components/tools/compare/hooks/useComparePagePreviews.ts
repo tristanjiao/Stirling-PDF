@@ -58,6 +58,40 @@ const replacePagesInCache = (key: string, pages: PagePreview[], total?: number) 
 };
 
 
+// Fast metadata-only pass: no canvas rendering, just sizes/orientation
+const readPdfDocumentMetadata = async (
+  file: File,
+  onInitTotal?: (totalPages: number) => void,
+  shouldAbort?: () => boolean,
+): Promise<PagePreview[]> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfWorkerManager.createDocument(arrayBuffer, {
+    disableAutoFetch: true,
+    disableStream: true,
+  });
+  try {
+    const previews: PagePreview[] = [];
+    onInitTotal?.(pdf.numPages);
+    const stop = () => Boolean(shouldAbort?.());
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      if (stop()) break;
+      const page = await pdf.getPage(pageNumber);
+      const displayViewport = page.getViewport({ scale: DISPLAY_SCALE });
+      previews.push({
+        pageNumber,
+        width: Math.round(displayViewport.width),
+        height: Math.round(displayViewport.height),
+        rotation: (page.rotate || 0) % 360,
+        url: null,
+      });
+      page.cleanup();
+    }
+    return previews;
+  } finally {
+    pdfWorkerManager.destroyDocument(pdf);
+  }
+};
+
 const renderPdfDocumentToImages = async (
   file: File,
   onBatch?: (previews: PagePreview[]) => void,
@@ -197,14 +231,29 @@ export const useComparePagePreviews = ({
       try {
         inFlightRef.current += 1;
         const current = inFlightRef.current;
-        const startAt = (entry?.pages?.length ?? 0) + 1;
+        // Stage 1: ensure metadata placeholders are available immediately
+        if ((entry?.pages?.length ?? 0) === 0) {
+          const meta = await readPdfDocumentMetadata(
+            file,
+            (total) => {
+              if (!cancelled && current === inFlightRef.current) setTotalInCache(key, total);
+            },
+            () => cancelled || current !== inFlightRef.current,
+          );
+          if (!cancelled && current === inFlightRef.current) {
+            replacePagesInCache(key, meta, meta.length);
+            lastKnownTotal = meta.length;
+          }
+        }
+
+        const startAt = (entry?.pages?.filter(p => p.url)?.length ?? 0) + 1;
         const previews = await renderPdfDocumentToImages(
           file,
           (batch) => {
             if (cancelled || current !== inFlightRef.current) return;
             appendBatchToCache(key, batch, lastKnownTotal || cachedTotal);
           },
-          16,
+          100,
           (total) => {
             if (!cancelled && current === inFlightRef.current) {
               lastKnownTotal = total;

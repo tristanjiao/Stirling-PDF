@@ -26,8 +26,26 @@ export const useCompareChangeNavigation = (
           `.compare-diff-page[data-page-number="${pageNumber}"]`
         ) as HTMLElement | null;
         if (!pageEl) return false;
-        const top = pageEl.offsetTop - Math.round(container.clientHeight * 0.2);
-        container.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+        const top = Math.max(0, pageEl.offsetTop - 4);
+        container.dataset.programmatic = '1';
+        container.scrollTop = Math.max(0, top);
+        // also move peer immediately to the same page top to keep alignment
+        const peerRef = pane === 'base' ? comparisonScrollRef : baseScrollRef;
+        const peer = peerRef.current;
+        if (peer) {
+          const peerPageEl = peer.querySelector(
+            `.compare-diff-page[data-page-number="${pageNumber}"]`
+          ) as HTMLElement | null;
+          if (peerPageEl) {
+            const peerTop = Math.max(0, peerPageEl.offsetTop - 4);
+            peer.dataset.programmatic = '1';
+            peer.scrollTop = peerTop;
+          }
+        }
+        requestAnimationFrame(() => {
+          delete (container as any).dataset.programmatic;
+          if (peerRef.current) delete (peerRef.current as any).dataset.programmatic;
+        });
         return true;
       };
 
@@ -56,9 +74,9 @@ export const useCompareChangeNavigation = (
                 `.compare-diff-page[data-page-number="${pageNumber}"]`
               ) as HTMLElement | null;
               if (peerPageEl) {
-                const peerMaxTop = Math.max(0, peer.scrollHeight - peer.clientHeight);
-                const top = Math.max(0, Math.min(peerMaxTop, peerPageEl.offsetTop - Math.round(peer.clientHeight * 0.2)));
-                peer.scrollTo({ top, behavior: 'auto' });
+                peer.dataset.programmatic = '1';
+                peer.scrollTop = Math.max(0, peerPageEl.offsetTop);
+                requestAnimationFrame(() => { if (peerRef.current) delete (peerRef.current as any).dataset.programmatic; });
               }
             }
           }
@@ -84,10 +102,24 @@ export const useCompareChangeNavigation = (
         const absoluteTop = minTop - containerRect.top + container.scrollTop;
         const absoluteLeft = minLeft - containerRect.left + container.scrollLeft;
         const maxTop = Math.max(0, container.scrollHeight - container.clientHeight);
-        const desiredTop = Math.max(0, Math.min(maxTop, absoluteTop - (container.clientHeight - boxHeight) / 2));
+        let desiredTop = Math.max(0, Math.min(maxTop, absoluteTop - (container.clientHeight - boxHeight) / 2));
+
+        // Clamp the desired top so the viewport stays within the target page bounds
+        const anchor = nodes[0];
+        const pageEl = anchor.closest('.compare-diff-page') as HTMLElement | null;
+        if (pageEl) {
+          const pageTop = pageEl.offsetTop;
+          const pageBottom = pageTop + pageEl.clientHeight;
+          const minAllowed = Math.max(0, Math.min(maxTop, pageTop));
+          const maxAllowed = Math.max(0, Math.min(maxTop, pageBottom - container.clientHeight));
+          desiredTop = Math.max(minAllowed, Math.min(maxAllowed, desiredTop));
+        }
         const desiredLeft = Math.max(0, absoluteLeft - (container.clientWidth - boxWidth) / 2);
 
-        container.scrollTo({ top: desiredTop, left: desiredLeft, behavior: 'smooth' });
+        container.dataset.programmatic = '1';
+        container.scrollTop = desiredTop;
+        container.scrollLeft = desiredLeft;
+        requestAnimationFrame(() => { delete (container as any).dataset.programmatic; });
 
         // Also scroll the peer container to the corresponding location in the
         // other PDF (same page and approximate vertical position within page),
@@ -114,12 +146,14 @@ export const useCompareChangeNavigation = (
                 0,
                 Math.min(peerMaxTop, peerPageEl.offsetTop + absoluteTopInPage - peer.clientHeight / 2)
               );
-              peer.scrollTo({ top: peerDesiredTop, behavior: 'smooth' });
+              peer.dataset.programmatic = '1';
+              peer.scrollTop = peerDesiredTop;
+              requestAnimationFrame(() => { if (peerRef.current) delete (peerRef.current as any).dataset.programmatic; });
             } else if (peerPageEl) {
               // Fallback: Scroll to page top (clamped)
-              const peerMaxTop = Math.max(0, peer.scrollHeight - peer.clientHeight);
-              const top = Math.max(0, Math.min(peerMaxTop, peerPageEl.offsetTop - Math.round(peer.clientHeight * 0.2)));
-              peer.scrollTo({ top, behavior: 'smooth' });
+              peer.dataset.programmatic = '1';
+              peer.scrollTop = Math.max(0, peerPageEl.offsetTop - 4);
+              requestAnimationFrame(() => { if (peerRef.current) delete (peerRef.current as any).dataset.programmatic; });
             }
           }
         }

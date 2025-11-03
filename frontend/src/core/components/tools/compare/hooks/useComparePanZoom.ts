@@ -348,14 +348,11 @@ export const useComparePanZoom = ({
         return;
       }
 
-      const sourceIsBase = source === baseScrollRef.current;
-      const sourceKey = sourceIsBase ? 'base' : 'comparison';
-
-      // Only sync if this scroll was initiated by the user (wheel/scrollbar/keyboard),
-      // not by our own programmatic scrolls.
-      if (!userScrollRef.current[sourceKey]) {
+      if ((source as any).dataset && (source as any).dataset.programmatic === '1') {
         return;
       }
+
+      const sourceIsBase = source === baseScrollRef.current;
 
       lastActivePaneRef.current = sourceIsBase ? 'base' : 'comparison';
 

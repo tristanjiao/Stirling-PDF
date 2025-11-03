@@ -1,5 +1,5 @@
 import { Group, Loader, Stack, Text } from '@mantine/core';
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import type { PagePreview } from '@app/types/compare';
 import type { TokenBoundingBox, CompareDocumentPaneProps } from '@app/types/compare';
 import { mergeConnectedRects, normalizeRotation, groupWordRects, computePageLayoutMetrics } from '@app/components/tools/compare/compare';
@@ -53,8 +53,6 @@ const CompareDocumentPane = ({
 
   // Track which page images have finished loading to avoid flashing between states
   const imageLoadedRef = useRef<Map<number, boolean>>(new Map());
-  const [, forceRerender] = useState(0);
-  const visiblePageRafRef = useRef<number | null>(null);
   const lastReportedVisiblePageRef = useRef<number | null>(null);
   const pageNodesRef = useRef<HTMLElement[] | null>(null);
   const groupedRectsByPage = useMemo(() => {
@@ -70,9 +68,40 @@ const CompareDocumentPane = ({
   useEffect(() => {
     if (zoom <= 1) {
       pagePanRef.current.clear();
-      forceRerender(v => v + 1);
     }
   }, [zoom]);
+
+  // IntersectionObserver to compute visible page (for lazy operations) without heavy scroll work
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    if (typeof IntersectionObserver === 'undefined') return;
+    const container = scrollRef.current;
+    const observer = new IntersectionObserver((entries) => {
+      if (typeof onVisiblePageChange !== 'function') return;
+      let bestPage: number | null = null;
+      let bestRatio = -1;
+      for (const entry of entries) {
+        const attr = entry.target.getAttribute('data-page-number');
+        const pn = attr ? parseInt(attr, 10) : NaN;
+        if (!Number.isNaN(pn) && entry.intersectionRatio > bestRatio) {
+          bestRatio = entry.intersectionRatio;
+          bestPage = pn;
+        }
+      }
+      if (bestPage != null && bestPage !== lastReportedVisiblePageRef.current) {
+        lastReportedVisiblePageRef.current = bestPage;
+        onVisiblePageChange(pane, bestPage);
+      }
+    }, { root: container, threshold: [0.25, 0.5, 0.75] });
+
+    const nodes = Array.from(container.querySelectorAll('.compare-diff-page')) as HTMLElement[];
+    pageNodesRef.current = nodes;
+    for (const node of nodes) observer.observe(node);
+    return () => {
+      for (const node of nodes) observer.unobserve(node);
+      observer.disconnect();
+    };
+  }, [scrollRef, pages, pane, onVisiblePageChange]);
 
   return (
     <div className="compare-pane">
@@ -99,38 +128,6 @@ const CompareDocumentPane = ({
         ref={scrollRef}
         onScroll={(event) => {
           handleScrollSync(event.currentTarget, peerScrollRef.current);
-          // Notify parent about the currently visible page (throttled via rAF)
-          if (visiblePageRafRef.current != null) return;
-          if (!onVisiblePageChange || pages.length === 0) return;
-          visiblePageRafRef.current = requestAnimationFrame(() => {
-            const container = scrollRef.current;
-            if (!container) return;
-            const mid = container.scrollTop + container.clientHeight * 0.5;
-            let bestPage = pages[0]?.pageNumber ?? 1;
-            let bestDist = Number.POSITIVE_INFINITY;
-            let nodes = pageNodesRef.current;
-            if (!nodes || nodes.length !== pages.length) {
-              nodes = Array.from(container.querySelectorAll('.compare-diff-page')) as HTMLElement[];
-              pageNodesRef.current = nodes;
-            }
-            for (const el of nodes) {
-              const top = el.offsetTop;
-              const height = el.clientHeight || 1;
-              const center = top + height / 2;
-              const dist = Math.abs(center - mid);
-              if (dist < bestDist) {
-                bestDist = dist;
-                const attr = el.getAttribute('data-page-number');
-                const pn = attr ? parseInt(attr, 10) : NaN;
-                if (!Number.isNaN(pn)) bestPage = pn;
-              }
-            }
-            if (typeof onVisiblePageChange === 'function' && bestPage !== lastReportedVisiblePageRef.current) {
-              lastReportedVisiblePageRef.current = bestPage;
-              onVisiblePageChange(pane, bestPage);
-            }
-            visiblePageRafRef.current = null;
-          });
         }}
         onMouseDown={undefined}
         onMouseMove={undefined}
@@ -209,7 +206,6 @@ const CompareDocumentPane = ({
                       const candY = dragRef.current.startPanY - dy;
                       const next = { x: Math.max(0, Math.min(maxX, candX)), y: Math.max(0, Math.min(maxY, candY)) };
                       pagePanRef.current.set(page.pageNumber, next);
-                      forceRerender(v => v + 1);
                       e.preventDefault();
                     }}
                     onMouseUp={(e) => {
@@ -242,7 +238,6 @@ const CompareDocumentPane = ({
                         onLoad={() => {
                           if (!imageLoadedRef.current.get(page.pageNumber)) {
                             imageLoadedRef.current.set(page.pageNumber, true);
-                            forceRerender(v => v + 1);
                           }
                         }}
                       />
