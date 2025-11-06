@@ -145,21 +145,6 @@
 
         </ul>
         <ul class="navbar-nav flex-nowrap">
-          <li class="nav-item dropdown">
-            <a class="nav-link" id="navbarDropdown-5" href="#" role="button" data-bs-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false" th:title="#{navbar.favorite}">
-              <span class="material-symbols-rounded">
-                star
-              </span>
-              <span class="icon-text icon-hide" th:data-text="#{navbar.favorite}" th:text="#{navbar.favorite}"></span>
-              <span class="material-symbols-rounded chevron-icon">expand_more</span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-tp dropdown-mw-28" role="menu" aria-labelledby="navbarDropdown-5">
-              <div class="dropdown-menu-wrapper px-xl-2 px-2 scroll-lock-y" id="favoritesDropdown" style="max-width: 95vw !important; ">
-                <!-- Dropdown items will be added here by JavaScript -->
-              </div>
-            </div>
-          </li>
           <li class="nav-item">
             <a class="nav-link" id="dark-mode-toggle" href="#" th:title="#{navbar.darkmode}">
               <span class="material-symbols-rounded" id="dark-mode-icon">
@@ -187,27 +172,6 @@
             </div>
           </li>
 
-          <li class="nav-item dropdown">
-            <a class="nav-link" href="#" id="searchDropdown" role="button" data-bs-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false" th:title="#{navbar.search}">
-              <span class="material-symbols-rounded">
-                search
-              </span>
-              <span class="icon-text icon-hide">Search</span>
-              <span class="material-symbols-rounded chevron-icon">expand_more</span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-tp" aria-labelledby="searchDropdown">
-              <div class="dropdown-menu-wrapper px-xl-2 px-2" style="max-width: 95vw !important;">
-                <form th:action="@{''}" class="d-flex p-2 search-form" id="searchForm">
-                  <input class="form-control search-input" type="search" th:placeholder="#{navbar.search}"
-                    aria-label="Search" id="navbarSearchInput">
-                </form>
-                <!-- Search Results -->
-                <div id="searchResults" class="search-results scroll-lock-y dropdown-mw-20"></div>
-              </div>
-            </div>
-          </li>
-
           <li class="nav-item">
             <!-- Settings Button -->
             <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"
@@ -222,7 +186,6 @@
       </div>
     </div>
     <script th:src="@{'/js/favourites.js'}"></script>
-    <script th:src="@{'/js/search.js'}"></script>
   </nav>
 
   <th:block th:insert="~{fragments/errorBannerPerPage.html :: errorBannerPerPage}"></th:block>

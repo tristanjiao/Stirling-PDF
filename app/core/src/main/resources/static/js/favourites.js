@@ -18,7 +18,6 @@ function updateFavoritesDropdown() {
   var dropdown = document.querySelector('#favoritesDropdown');
 
   if (!dropdown) {
-    console.error('Dropdown element with ID "favoritesDropdown" not found!');
     return;
   }
   dropdown.innerHTML = '';
