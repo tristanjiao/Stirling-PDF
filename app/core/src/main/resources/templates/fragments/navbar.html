@@ -60,8 +60,7 @@
   border-color: var(--md-nav-color-on-separator)">
     <div class="container " style="max-width: 100%;">
       <a class="navbar-brand" th:href="${@contextPath}" style="display: flex;">
-        <img class="main-icon" th:src="@{'/favicon.svg'}" alt="icon">
-        <span class="icon-text" th:text="${@navBarText}"></span>
+        <span class="icon-text" th:text="${@navBarText != null and @navBarText != ''} ? ${@navBarText} : 'UtilitiesDock'"></span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -209,12 +208,6 @@
             </div>
           </li>
 
-          <li class="nav-item" th:if="${!@runningProOrHigher}">
-            <a href="https://stirlingpdf.com/pricing" class="nav-link go-pro-link" target="_blank"
-              rel="noopener noreferrer">
-              <span class="go-pro-badge" th:text="#{enterpriseEdition.button}"></span>
-            </a>
-          </li>
           <li class="nav-item">
             <!-- Settings Button -->
             <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"
@@ -249,11 +242,11 @@
           <p class="mb-0" th:utext="#{settings.appVersion} + ' ' + ${@appVersion}"></p>
           <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
             <div class="footer-center" style="flex-direction: row;">
-              <a href="https://github.com/Stirling-Tools/Stirling-PDF" class="mx-1" role="button" target="_blank"
+              <a href="https://github.com/UtilitiesDock/UtilitiesDock" class="mx-1" role="button" target="_blank"
                 th:title="#{visitGithub}">
                 <img th:src="@{'/images/github.svg'}" alt="github">
               </a>
-              <a href="https://hub.docker.com/r/stirlingtools/stirling-pdf" class="mx-1" role="button" target="_blank"
+              <a href="https://hub.docker.com/r/utilitiesdock/utilitiesdock" class="mx-1" role="button" target="_blank"
                 th:title="#{seeDockerHub}">
                 <img th:src="@{'/images/docker.svg'}" alt="docker">
               </a>
@@ -265,9 +258,8 @@
 
             <a th:href="@{'/swagger-ui/index.html'}" class="btn btn-sm btn-outline-primary mx-1" role="button"
               target="_blank">API</a>
-            <a href="https://github.com/Stirling-Tools/Stirling-PDF/releases"
-              class="btn btn-sm btn-outline-primary mx-1" id="update-btn" th:utext="#{settings.update}" role="button"
-              target="_blank"></a>
+            <a th:href="@{'/releases'}"
+              class="btn btn-sm btn-outline-primary mx-1" id="update-btn" th:utext="#{settings.update}" role="button"></a>
           </div>
 
           <div class="mb-3">

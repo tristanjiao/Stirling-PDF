@@ -2,20 +2,23 @@
 
 document.addEventListener('DOMContentLoaded', function () {
   if (window.analyticsPromptBoolean) {
-    const analyticsModal = new bootstrap.Modal(document.getElementById('analyticsModal'));
-    analyticsModal.show();
+    const analyticsElement = document.getElementById('analyticsModal');
+    if (analyticsElement) {
+      const analyticsModal = new bootstrap.Modal(analyticsElement);
+      analyticsModal.show();
 
-    let retryCount = 0;
-function hideCookieBanner() {
-  const cookieBanner = document.querySelector('#cc-main');
-  if (cookieBanner && cookieBanner.offsetHeight > 0) {
-    cookieBanner.style.display = "none";
-  } else if (retryCount < 20) {
-    retryCount++;
-    setTimeout(hideCookieBanner, 100);
-  }
-}
-hideCookieBanner();
+      let retryCount = 0;
+      function hideCookieBanner() {
+        const cookieBanner = document.querySelector('#cc-main');
+        if (cookieBanner && cookieBanner.offsetHeight > 0) {
+          cookieBanner.style.display = 'none';
+        } else if (retryCount < 20) {
+          retryCount++;
+          setTimeout(hideCookieBanner, 100);
+        }
+      }
+      hideCookieBanner();
+    }
   }
 });
 /*]]>*/function setAnalytics(enabled) {
@@ -29,7 +32,12 @@ hideCookieBanner();
     .then((response) => {
       if (response.status === 200) {
         console.log('Analytics setting updated successfully');
-        bootstrap.Modal.getInstance(document.getElementById('analyticsModal')).hide();
+        const analyticsElement = document.getElementById('analyticsModal');
+        const analyticsInstance =
+          analyticsElement && bootstrap.Modal.getInstance(analyticsElement);
+        if (analyticsInstance) {
+          analyticsInstance.hide();
+        }
 
         if (typeof CookieConsent !== "undefined") {
           if (enabled) {
@@ -62,9 +70,14 @@ if (defaultView === 'home-legacy') {
 
 document.addEventListener('DOMContentLoaded', function () {
   const surveyVersion = '3.0';
-  const modal = new bootstrap.Modal(document.getElementById('surveyModal'));
+  const surveyElement = document.getElementById('surveyModal');
   const dontShowAgain = document.getElementById('dontShowAgain');
   const takeSurveyButton = document.getElementById('takeSurvey');
+
+  let modal = null;
+  if (surveyElement) {
+    modal = new bootstrap.Modal(surveyElement);
+  }
 
   const pdfProcessingThresholds = [8, 15, 22, 35, 50, 75, 100, 150];
 
@@ -94,27 +107,29 @@ document.addEventListener('DOMContentLoaded', function () {
     return pdfProcessingThresholds.includes(pdfProcessingCount);
   }
 
-  if (shouldShowSurvey()) {
+  if (modal && shouldShowSurvey()) {
     modal.show();
   }
 
-  dontShowAgain.addEventListener('change', function () {
-    if (this.checked) {
-      localStorage.setItem('dontShowSurvey', 'true');
+  if (dontShowAgain) {
+    dontShowAgain.addEventListener('change', function () {
+      if (this.checked) {
+        localStorage.setItem('dontShowSurvey', 'true');
+        localStorage.setItem('surveyVersion', surveyVersion);
+      } else {
+        localStorage.removeItem('dontShowSurvey');
+        localStorage.removeItem('surveyVersion');
+      }
+    });
+  }
+  if (takeSurveyButton && modal) {
+    takeSurveyButton.addEventListener('click', function () {
+      localStorage.setItem('surveyTaken', 'true');
       localStorage.setItem('surveyVersion', surveyVersion);
-    } else {
-      localStorage.removeItem('dontShowSurvey');
-      localStorage.removeItem('surveyVersion');
-    }
-  });
-if (takeSurveyButton) {
-  takeSurveyButton.addEventListener('click', function () {
-    localStorage.setItem('surveyTaken', 'true');
-    localStorage.setItem('surveyVersion', surveyVersion);
-    modal.hide();
-  });
-}
-  if (localStorage.getItem('dontShowSurvey')) {
+      modal.hide();
+    });
+  }
+  if (modal && localStorage.getItem('dontShowSurvey')) {
     modal.hide();
   }
 
