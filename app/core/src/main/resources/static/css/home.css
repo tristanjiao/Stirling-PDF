@@ -90,19 +90,6 @@
   animation: 2s infinite Pulse steps(20);
 }
 
-.newfeature{
-  display: flex;
-  width:fit-content
-}
-.recent-features{
-  display: flex;
-  flex-direction: row;
-  max-width: 100%;
-  overflow: hidden;
-  justify-content: center;
-
-}
-
  .close-icon {
   color: var(--favourite-remove) !important;
 }

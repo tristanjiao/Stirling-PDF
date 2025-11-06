@@ -846,7 +846,7 @@ textarea.form-control {
   display: flex;
   align-items: center;
   transition: none !important;
-  padding: 0.5rem 1rem !important;
+  padding: 0.45rem 0.75rem !important;
   border: 1px transparent;
 }
 
@@ -856,6 +856,12 @@ textarea.form-control {
 
 .navbar-nav .nav-link {
   color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.95rem;
+}
+
+.navbar-nav .material-symbols-rounded {
+  font-size: 1.35rem;
+  margin-right: 0.25rem;
 }
 
 .navbar-nav .nav-link:focus,

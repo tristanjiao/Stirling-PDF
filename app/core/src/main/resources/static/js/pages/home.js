@@ -146,24 +146,6 @@ function setAsDefault(value) {
   console.log(`Default view set to: ${value}`);
 }
 
-function adjustVisibleElements() {
-  const container = document.querySelector('.recent-features');
-  if(!container) return;
-  const subElements = Array.from(container.children);
-
-  let totalWidth = 0;
-
-  subElements.forEach((element) => {
-    totalWidth += 12 * parseFloat(getComputedStyle(document.documentElement).fontSize);
-
-    if (totalWidth > window.innerWidth) {
-      element.style.display = 'none';
-    } else {
-      element.style.display = 'block';
-    }
-  });
-}
-
 function adjustContainerAlignment() {
   document.querySelectorAll('.features-container').forEach((parent) => {
     parent.querySelectorAll('.feature-rows').forEach((container) => {
@@ -207,9 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 window.addEventListener('load', () => {
   adjustContainerAlignment();
-  adjustVisibleElements();
 });
 window.addEventListener('resize', () => {
   adjustContainerAlignment();
-  adjustVisibleElements();
 });
