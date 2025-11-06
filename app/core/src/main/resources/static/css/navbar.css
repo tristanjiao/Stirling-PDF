@@ -67,13 +67,15 @@
 .navbar-brand {
   display: flex !important;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   min-width: 0; /* Allow shrinking */
+  flex: 0 0 auto;
 }
 
 .navbar-brand .icon-text {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -717,6 +719,11 @@ html[dir="rtl"] .dropdown-menu {
 .feature-rows.single-column {
   justify-content: center;
   /* Center-align a single column */
+}
+
+.navbar-nav.flex-nowrap {
+  flex-wrap: nowrap !important;
+  row-gap: 0;
 }
 
 .feature-group-header {
