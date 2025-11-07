@@ -72,6 +72,12 @@
   flex: 0 0 auto;
 }
 
+.navbar-brand .navbar-logo {
+  height: 2.25rem;
+  width: auto;
+  flex-shrink: 0;
+}
+
 .navbar-brand .icon-text {
   font-size: clamp(0.95rem, 2vw, 1.1rem);
   font-weight: 700;
@@ -87,6 +93,10 @@
     font-size: 1.3rem;
   }
 
+  .navbar-brand .navbar-logo {
+    height: 2rem;
+  }
+
   .main-icon {
     width: 32px;
     height: 32px;
@@ -96,6 +106,10 @@
 @media only screen and (max-width: 420px) {
   .navbar-brand .icon-text {
     font-size: 1.1rem;
+  }
+
+  .navbar-brand .navbar-logo {
+    height: 1.8rem;
   }
 
   .main-icon {
@@ -109,6 +123,10 @@
     font-size: 1rem;
   }
 
+  .navbar-brand .navbar-logo {
+    height: 1.6rem;
+  }
+
   .main-icon {
     width: 24px;
     height: 24px;
@@ -118,6 +136,10 @@
 @media only screen and (max-width: 340px) {
   .navbar-brand .icon-text {
     font-size: 0.9rem;
+  }
+
+  .navbar-brand .navbar-logo {
+    height: 1.4rem;
   }
 
   .main-icon {
@@ -130,6 +152,10 @@
 @media only screen and (max-width: 320px) {
   .navbar-brand .icon-text {
     display: none;
+  }
+
+  .navbar-brand .navbar-logo {
+    height: 1.4rem;
   }
 
   .main-icon {
