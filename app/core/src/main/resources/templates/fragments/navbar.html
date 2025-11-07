@@ -60,6 +60,7 @@
   border-color: var(--md-nav-color-on-separator)">
     <div class="container " style="max-width: 100%;">
       <a class="navbar-brand" th:href="${@contextPath}" style="display: flex;">
+        <img class="navbar-logo" th:src="@{'/images/utilitiesdock-logo.svg'}" alt="UtilitiesDock logo" width="48" height="32" loading="lazy" />
         <span class="icon-text" th:text="${@navBarText != null and @navBarText != ''} ? ${@navBarText} : 'UtilitiesDock'"></span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"

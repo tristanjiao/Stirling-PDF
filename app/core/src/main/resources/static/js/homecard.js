@@ -1,6 +1,10 @@
 function filterCards() {
   var input = document.getElementById('searchBar');
-  var filter = input.value.toUpperCase().trim();
+  var filter = '';
+
+  if (input) {
+    filter = input.value.toUpperCase().trim();
+  }
 
   // Split the input filter into individual words for multi-word matching
   var filterWords = filter.split(/[\s,;.\-]+/);
@@ -24,7 +28,7 @@ function filterCards() {
       // Check if all words in the filter match the content
       var matches = filterWords.every((word) => content.includes(word));
 
-      if (matches) {
+      if (!filter || matches) {
         card.style.display = '';
         groupMatchesFilter = true;
       } else {
@@ -32,7 +36,7 @@ function filterCards() {
       }
     }
 
-    if (!groupMatchesFilter) {
+    if (filter && !groupMatchesFilter) {
       featureGroup.style.display = 'none';
     } else {
       featureGroup.style.display = '';
